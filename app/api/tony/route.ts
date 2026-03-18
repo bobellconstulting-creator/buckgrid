@@ -5,31 +5,16 @@ import { NextRequest } from "next/server"
 export const runtime = "nodejs"
 export const maxDuration = 60
 
-const GOOGLE_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
+const GOOGLE_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 
-function getTonyModelConfig() {
-  if (process.env.NEURADEX_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY) {
-    return {
-      provider: "google",
-      apiKey:
-        process.env.NEURADEX_GOOGLE_API_KEY ||
-        process.env.GOOGLE_API_KEY ||
-        process.env.GEMINI_API_KEY!,
-      model: "gemini-2.5-flash",
-      baseURL: GOOGLE_OPENAI_BASE_URL,
-    }
-  }
+type ModelConfig = { provider: string; apiKey: string; model: string; baseURL: string | undefined }
 
-  if (process.env.OPENAI_API_KEY) {
-    return {
-      provider: "openai",
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "gpt-4o",
-      baseURL: undefined as string | undefined,
-    }
-  }
-
-  return null
+function getModelConfigs(): ModelConfig[] {
+  const configs: ModelConfig[] = []
+  const googleKey = process.env.NEURADEX_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY
+  if (googleKey) configs.push({ provider: "google", apiKey: googleKey, model: "gemini-2.0-flash", baseURL: GOOGLE_BASE })
+  if (process.env.OPENAI_API_KEY) configs.push({ provider: "openai", apiKey: process.env.OPENAI_API_KEY, model: "gpt-4o", baseURL: undefined })
+  return configs
 }
 
 interface TonyRequestBody {
@@ -48,36 +33,17 @@ export async function POST(req: NextRequest) {
     const body: TonyRequestBody = await req.json()
     const { imageBase64, boundaryGeoJSON, mapBounds, acreage, region, state, messages, stream = true } = body
 
-    const modelConfig = getTonyModelConfig()
-    if (!modelConfig) {
-      return new Response("No Tony vision model is configured", { status: 500 })
-    }
+    const configs = getModelConfigs()
+    if (!configs.length) return new Response("No AI model configured", { status: 500 })
 
-    const client = new OpenAI({
-      apiKey: modelConfig.apiKey,
-      baseURL: modelConfig.baseURL,
-      timeout: 45000,
-    })
-
-    // Build user message content
+    // Build user content (shared across model attempts)
     const userContent: OpenAI.ChatCompletionContentPart[] = []
-
-    // Attach satellite screenshot
     if (imageBase64) {
-      userContent.push({
-        type: "image_url",
-        image_url: {
-          url: `data:image/png;base64,${imageBase64}`,
-          detail: "high",
-        },
-      })
+      userContent.push({ type: "image_url", image_url: { url: `data:image/png;base64,${imageBase64}`, detail: "high" } })
     }
-
-    // Property context
     userContent.push({
       type: "text",
-      text: `
-Property Details:
+      text: `Property Details:
 - Size: ${acreage} acres
 - Region: ${region}
 - State: ${state}
@@ -88,84 +54,58 @@ Property Details:
 Analyze this satellite image and provide your full habitat consultation.
 Follow the exact response format in your instructions.
 ALL coordinates in DRAW_FEATURES must fall strictly within the map bounds above.
-Coordinates are [longitude, latitude] — longitude always first.
-      `.trim(),
+Coordinates are [longitude, latitude] — longitude always first.`.trim(),
     })
 
-    // Build message history
     const conversationMessages: OpenAI.ChatCompletionMessageParam[] = [
-      ...(messages?.map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })) ?? []),
+      ...(messages?.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })) ?? []),
       { role: "user", content: userContent },
     ]
+    const allMessages: OpenAI.ChatCompletionMessageParam[] = [
+      { role: "system", content: TONY_SYSTEM_PROMPT },
+      ...conversationMessages,
+    ]
 
-    if (!stream) {
-      const completion = await client.chat.completions.create({
-        model: modelConfig.model,
-        max_tokens: 1200,
-        messages: [
-          { role: "system", content: TONY_SYSTEM_PROMPT },
-          ...conversationMessages,
-        ],
-      })
+    let lastError = ""
+    for (const cfg of configs) {
+      try {
+        const client = new OpenAI({ apiKey: cfg.apiKey, baseURL: cfg.baseURL, timeout: 45000 })
 
-      const reply = completion.choices[0]?.message?.content || "No reply."
-      return new Response(JSON.stringify({ reply }), {
-        headers: { "Content-Type": "application/json" },
-      })
+        if (!stream) {
+          const completion = await client.chat.completions.create({ model: cfg.model, max_tokens: 1200, messages: allMessages })
+          const reply = completion.choices[0]?.message?.content || "No reply."
+          return new Response(JSON.stringify({ reply }), { headers: { "Content-Type": "application/json" } })
+        }
+
+        const streamResult = await client.chat.completions.create({ model: cfg.model, max_tokens: 4096, stream: true, messages: allMessages })
+        const encoder = new TextEncoder()
+        const readable = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of streamResult) {
+                const text = chunk.choices[0]?.delta?.content ?? ""
+                if (text) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
+              }
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+            } catch (e) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: e instanceof Error ? e.message : "stream error" })}\n\n`))
+            } finally {
+              controller.close()
+            }
+          },
+        })
+        return new Response(readable, {
+          headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Accel-Buffering": "no" },
+        })
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err)
+        console.error(`[Tony] ${cfg.provider} failed:`, lastError)
+      }
     }
 
-    // Stream response
-    const streamResult = await client.chat.completions.create({
-      model: modelConfig.model,
-      max_tokens: 4096,
-      stream: true,
-      messages: [
-        { role: "system", content: TONY_SYSTEM_PROMPT },
-        ...conversationMessages,
-      ],
-    })
-
-    const encoder = new TextEncoder()
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of streamResult) {
-            const text = chunk.choices[0]?.delta?.content ?? ""
-            if (text) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ text })}\n\n`)
-              )
-            }
-          }
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"))
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : "Stream error"
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ error: msg })}\n\n`)
-          )
-        } finally {
-          controller.close()
-        }
-      },
-    })
-
-    return new Response(readable, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-        "X-Accel-Buffering": "no",
-      },
-    })
+    return new Response(JSON.stringify({ error: `All models failed: ${lastError}` }), { status: 500, headers: { "Content-Type": "application/json" } })
   } catch (err) {
     console.error("[Tony API] Error:", err)
-    const message = err instanceof Error ? err.message : "Internal server error"
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    })
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }), { status: 500, headers: { "Content-Type": "application/json" } })
   }
 }

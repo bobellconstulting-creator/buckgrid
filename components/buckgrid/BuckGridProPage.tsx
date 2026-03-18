@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import html2canvas from 'html2canvas'
 import ToolGrid from './ToolGrid'
 import TonyChat, { type TonyChatHandle } from './TonyChat'
 import { TOOLS, type Tool } from '@/lib/buckgrid/tools'
@@ -59,6 +60,20 @@ export default function BuckGridProPage() {
 
     setActiveTool(TOOLS[0])
     chatRef.current?.triggerScan(contextPrompt)
+  }, [])
+
+  const captureMap = useCallback(async () => {
+    const el = mapRef.current?.getCaptureElement()
+    if (!el) return
+    try {
+      const canvas = await html2canvas(el, { useCORS: true, allowTaint: true, scale: 2, logging: false })
+      const link = document.createElement('a')
+      link.download = `buckgrid-map-${Date.now()}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } catch (err) {
+      console.warn('[BuckGrid] Capture failed:', err)
+    }
   }, [])
 
   const searchAddress = useCallback(async () => {
@@ -342,6 +357,34 @@ export default function BuckGridProPage() {
           </button>
         </div>
       </div>
+
+      {/* ── CAPTURE BUTTON (top-right, left of Tony) ── */}
+      <button
+        onClick={captureMap}
+        title="Save map snapshot"
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: isMobile ? 18 : 366,
+          zIndex: 2001,
+          background: 'rgba(8,10,7,0.90)',
+          border: '1px solid rgba(196,146,40,0.26)',
+          borderRadius: 12,
+          color: '#C49228',
+          width: 42,
+          height: 42,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.30)',
+          fontSize: 18,
+          transition: 'background 0.15s, border-color 0.15s',
+        }}
+      >
+        📷
+      </button>
 
       {/* ── TONY CHAT (right) ── */}
       <TonyChat

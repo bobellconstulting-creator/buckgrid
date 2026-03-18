@@ -159,6 +159,8 @@ export function useMapDrawing({ containerRef, activeTool, brushSize, tonyFeature
   const tonyItemsRef = useRef<any>(null)
   const currentDrawRef = useRef<any>(null)
   const dragStartRef = useRef<any>(null)
+  const isPaintingRef = useRef<boolean>(false)
+  const lastPaintLatLngRef = useRef<any>(null)
   const pendingViewRef = useRef<{ center: [number, number]; zoom: number } | null>(null)
   const pendingBoundsRef = useRef<{ south: number; west: number; north: number; east: number } | null>(null)
 
@@ -256,35 +258,69 @@ export function useMapDrawing({ containerRef, activeTool, brushSize, tonyFeature
         return
       }
 
+      // Brush tool — paint one circle on mousedown, continue on drag
       const zoom = map.getZoom?.() ?? 16
       const metersPerPixel = (156543.03392 * Math.cos((point.lat * Math.PI) / 180)) / (2 ** zoom)
       const radiusMeters = Math.max(12, brushSize * metersPerPixel)
-      const polygon = L.polygon(circlePolygon(point, radiusMeters), {
-        color,
-        fillColor: color,
-        fillOpacity: FOOD_TYPES.has(activeTool) ? 0.38 : 0.28,
-        weight: activeTool === 'stand' || activeTool === 'focus' ? 3 : 2,
-      })
-      ;(polygon as any).options.layerType = FOOD_TYPES.has(activeTool) ? activeTool : activeTool
-      drawnItemsRef.current.addLayer(polygon)
+      const paintCircle = (latlng: any) => {
+        const poly = L.polygon(circlePolygon(latlng, radiusMeters), {
+          color,
+          fillColor: color,
+          fillOpacity: FOOD_TYPES.has(activeTool) ? 0.40 : 0.30,
+          weight: activeTool === 'stand' || activeTool === 'focus' ? 3 : 2,
+        })
+        ;(poly as any).options.layerType = activeTool
+        drawnItemsRef.current.addLayer(poly)
+      }
+      paintCircle(point)
+      isPaintingRef.current = true
+      lastPaintLatLngRef.current = point
       currentDrawRef.current = null
     }
 
     const onPointerMove = (e: any) => {
-      if (!currentDrawRef.current) return
       e.originalEvent?.preventDefault?.()
 
-      if (activeTool === 'boundary' && dragStartRef.current) {
+      // Boundary drag
+      if (activeTool === 'boundary' && currentDrawRef.current && dragStartRef.current) {
         currentDrawRef.current.setBounds(L.latLngBounds(dragStartRef.current, e.latlng))
         return
       }
 
-      if (activeTool === 'path') {
+      // Path draw
+      if (activeTool === 'path' && currentDrawRef.current) {
         currentDrawRef.current.addLatLng(e.latlng)
+        return
+      }
+
+      // Brush paint — continuous on drag
+      if (isPaintingRef.current && activeTool !== 'nav' && activeTool !== 'boundary' && activeTool !== 'path') {
+        const point = e.latlng
+        const zoom = map.getZoom?.() ?? 16
+        const metersPerPixel = (156543.03392 * Math.cos((point.lat * Math.PI) / 180)) / (2 ** zoom)
+        const radiusMeters = Math.max(12, brushSize * metersPerPixel)
+        // Throttle: only paint when moved at least half a brush radius
+        if (lastPaintLatLngRef.current) {
+          const moved = lastPaintLatLngRef.current.distanceTo(point)
+          if (moved < radiusMeters * 0.55) return
+        }
+        const color = colorForTool(activeTool)
+        const poly = L.polygon(circlePolygon(point, radiusMeters), {
+          color,
+          fillColor: color,
+          fillOpacity: FOOD_TYPES.has(activeTool) ? 0.40 : 0.30,
+          weight: activeTool === 'stand' || activeTool === 'focus' ? 3 : 2,
+        })
+        ;(poly as any).options.layerType = activeTool
+        drawnItemsRef.current?.addLayer(poly)
+        lastPaintLatLngRef.current = point
       }
     }
 
     const onPointerUp = () => {
+      isPaintingRef.current = false
+      lastPaintLatLngRef.current = null
+
       if (!currentDrawRef.current) return
 
       if (activeTool === 'boundary') {
