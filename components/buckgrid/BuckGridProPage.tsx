@@ -1,27 +1,17 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react'
-import dynamic from 'next/dynamic'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ToolGrid from './ToolGrid'
 import TonyChat, { type TonyChatHandle } from './TonyChat'
 import { TOOLS, type Tool } from '@/lib/buckgrid/tools'
-import type { MapContainerHandle } from './MapContainer'
+import MapContainer, { type MapContainerHandle } from './MapContainer'
 import type { TonyFeature, ParsedTonyResponse } from '@/lib/parse-tony-response'
 import MapErrorBoundary from './MapErrorBoundary'
-
-// Dynamic import prevents SSR errors with Leaflet
-const MapContainer = dynamic(() => import('./MapContainer'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d09' }}>
-      <div style={{ color: 'rgba(217,164,65,0.6)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading map...</div>
-    </div>
-  ),
-})
 
 export default function BuckGridProPage() {
   const mapRef = useRef<MapContainerHandle>(null)
   const chatRef = useRef<TonyChatHandle>(null)
+  const [mounted, setMounted] = useState(false)
   const [activeTool, setActiveTool] = useState<Tool>(TOOLS[0])
   const [brushSize, setBrushSize] = useState(30)
   const [propertyAcres, setPropertyAcres] = useState(0)
@@ -34,6 +24,7 @@ export default function BuckGridProPage() {
   const isMobile = viewportWidth < 960
 
   useEffect(() => {
+    setMounted(true)
     const syncViewport = () => setViewportWidth(window.innerWidth)
     syncViewport()
     window.addEventListener('resize', syncViewport)
@@ -115,12 +106,17 @@ export default function BuckGridProPage() {
       }}
     >
 
-      {/* Full-screen map */}
-      <MapErrorBoundary>
-        <Suspense fallback={null}>
+      {/* Full-screen map — client-only to guarantee ref is set */}
+      {!mounted && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d09' }}>
+          <div style={{ color: 'rgba(217,164,65,0.6)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading map...</div>
+        </div>
+      )}
+      {mounted && (
+        <MapErrorBoundary>
           <MapContainer ref={mapRef} activeTool={activeTool} brushSize={brushSize} tonyFeatures={tonyFeatures} />
-        </Suspense>
-      </MapErrorBoundary>
+        </MapErrorBoundary>
+      )}
 
       <div
         style={{
