@@ -7,16 +7,32 @@
 
 /* ── BuckGrid Pro Design Tokens ─────────────────────────────── */
 :root {
-  --bg-base:       #0A0D09;
-  --bg-surface:    #111510;
-  --bg-elevated:   #181E15;
-  --bg-card:       rgba(16,21,14,0.94);
-  --border:        rgba(255,255,255,0.07);
-  --border-gold:   rgba(217,164,65,0.2);
-  --gold:          #D9A441;
-  --gold-bright:   #E8B84B;
-  --gold-dim:      rgba(217,164,65,0.15);
-  --green-accent:  #4B7A2C;
+  /* Core palette — matched to brand guide */
+  --black:         #080A07;
+  --timber:        #111409;
+  --bark:          #1C2213;
+  --canopy:        #263018;
+  --sage:          #4A6A2C;
+  --brass:         #C49228;
+  --harvest:       #E8A820;
+  --copper:        #9B6E18;
+  --ivory:         #F0E8D4;
+  --parchment:     #D4C9A8;
+  --fog:           #8A8270;
+  --stone:         #4A4438;
+  --blood:         #7A1A08;
+
+  /* Aliases for existing component use */
+  --bg-base:       #080A07;
+  --bg-surface:    #111409;
+  --bg-elevated:   #1C2213;
+  --bg-card:       rgba(17,20,9,0.94);
+  --border:        rgba(255,255,255,0.06);
+  --border-gold:   rgba(196,146,40,0.22);
+  --gold:          #C49228;
+  --gold-bright:   #E8A820;
+  --gold-dim:      rgba(196,146,40,0.15);
+  --green-accent:  #4A6A2C;
   --text-primary:  #F0E8D4;
   --text-muted:    rgba(240,232,212,0.55);
   --text-dim:      rgba(240,232,212,0.3);
@@ -138,8 +154,50 @@
   background: var(--bg-elevated) !important;
 }
 
-/* ── Pulse animation for pinch points ──────────────────────── */
+/* ── Pulse animation for Lock & Scan button ────────────────── */
 @keyframes bgPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(1.3); }
 }
+
+@keyframes lockPulse {
+  0%, 100% { box-shadow: 0 14px 30px rgba(196,146,40,0.30), 0 0 0 0 rgba(196,146,40,0.25); }
+  50%       { box-shadow: 0 14px 30px rgba(196,146,40,0.50), 0 0 0 8px rgba(196,146,40,0); }
+}
+
+.btn-lock-scan {
+  animation: lockPulse 2.6s ease-in-out infinite;
+}
+.btn-lock-scan:hover {
+  animation: none;
+  box-shadow: 0 18px 40px rgba(196,146,40,0.55) !important;
+  transform: translateY(-1px);
+}
+.btn-lock-scan:active {
+  animation: none;
+  transform: scale(0.97);
+}
+
+/* ── Landing page ────────────────────────────────────────────── */
+body.landing {
+  overflow: auto !important;
+}
+
+/* Grid texture overlay used on landing sections */
+.grid-texture {
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(196,146,40,0.04) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(196,146,40,0.04) 60px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fadeUp 0.7s var(--ease) both; }
+.fade-up-1 { animation-delay: 0.1s; }
+.fade-up-2 { animation-delay: 0.22s; }
+.fade-up-3 { animation-delay: 0.36s; }
+.fade-up-4 { animation-delay: 0.50s; }
+.fade-up-5 { animation-delay: 0.64s; }

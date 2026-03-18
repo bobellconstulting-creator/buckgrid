@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, overflow: 'hidden', width: '100vw', height: '100dvh', position: 'relative' }}>
+      <body style={{ margin: 0, padding: 0, width: '100vw', position: 'relative' }}>
         {children}
       </body>
     </html>

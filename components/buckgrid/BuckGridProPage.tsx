@@ -102,14 +102,14 @@ export default function BuckGridProPage() {
         overflow: 'hidden',
         position: 'fixed',
         background:
-          'radial-gradient(circle at top left, rgba(166,109,22,0.16), transparent 26%), linear-gradient(180deg, #0c100c 0%, #0a0d09 100%)',
+          'radial-gradient(circle at top left, rgba(196,146,40,0.10), transparent 30%), linear-gradient(180deg, #080a07 0%, #080a07 100%)',
       }}
     >
 
       {/* Full-screen map — client-only to guarantee ref is set */}
       {!mounted && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d09' }}>
-          <div style={{ color: 'rgba(217,164,65,0.6)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading map...</div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080a07' }}>
+          <div style={{ color: 'rgba(196,146,40,0.6)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>Loading map...</div>
         </div>
       )}
       {mounted && (
@@ -137,19 +137,30 @@ export default function BuckGridProPage() {
           zIndex: 2000,
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 8,
-          padding: '7px 14px',
+          gap: 9,
+          padding: '7px 15px 7px 11px',
           borderRadius: 999,
-          background: 'rgba(10,12,10,0.82)',
-          border: '1px solid rgba(217,164,65,0.22)',
-          backdropFilter: 'blur(16px)',
+          background: 'rgba(8,10,7,0.88)',
+          border: '1px solid rgba(196,146,40,0.28)',
+          backdropFilter: 'blur(18px)',
           pointerEvents: 'none',
         }}
       >
-        <span style={{ color: '#d9a441', fontSize: 11, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Playfair Display', serif" }}>
+        {/* BuckGrid logo mark — antler tines + grid */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+          <path d="M12 2 L12 8" stroke="#C49228" strokeWidth="1.8" strokeLinecap="round"/>
+          <path d="M12 8 L8 4" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M12 8 L16 4" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M12 8 L10 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M12 8 L14 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+          <rect x="5" y="13" width="14" height="9" rx="1.5" stroke="#C49228" strokeWidth="1.5" fill="none"/>
+          <line x1="5" y1="17" x2="19" y2="17" stroke="#C49228" strokeWidth="1" opacity="0.6"/>
+          <line x1="12" y1="13" x2="12" y2="22" stroke="#C49228" strokeWidth="1" opacity="0.6"/>
+        </svg>
+        <span style={{ color: '#E8A820', fontSize: 11, fontWeight: 900, letterSpacing: '0.22em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif" }}>
           BuckGrid Pro
         </span>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 8px rgba(132,204,22,0.8)', flexShrink: 0 }} />
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 6px rgba(132,204,22,0.9)', flexShrink: 0 }} />
       </div>
 
       {/* ── ADDRESS SEARCH BAR ── */}
@@ -169,28 +180,29 @@ export default function BuckGridProPage() {
           placeholder="Search address or property..."
           style={{
             flex: 1,
-            background: 'rgba(10,12,10,0.92)',
-            border: '1px solid rgba(217,164,65,0.24)',
+            background: 'rgba(8,10,7,0.94)',
+            border: '1px solid rgba(196,146,40,0.26)',
             borderRight: 'none',
-            color: '#f7f0de',
+            color: '#F0E8D4',
             padding: '14px 16px',
             borderRadius: '14px 0 0 14px',
             fontSize: 13,
             outline: 'none',
-            backdropFilter: 'blur(16px)',
-            boxShadow: '0 18px 40px rgba(0,0,0,0.24)',
+            backdropFilter: 'blur(18px)',
+            boxShadow: '0 18px 40px rgba(0,0,0,0.30)',
+            fontFamily: "'DM Sans', sans-serif",
           }}
         />
         <button
           onClick={searchAddress}
           disabled={searching}
           style={{
-            background: 'linear-gradient(135deg, #d9a441 0%, #f6d58e 100%)',
+            background: 'linear-gradient(135deg, #C49228 0%, #E8A820 100%)',
             border: 'none',
             borderRadius: '0 14px 14px 0',
-            color: '#17150f',
+            color: '#0D0E09',
             fontWeight: 900,
-            padding: '0 18px',
+            padding: '0 20px',
             cursor: searching ? 'wait' : 'pointer',
             fontSize: 15,
             flexShrink: 0,
@@ -217,7 +229,6 @@ export default function BuckGridProPage() {
 
       {/* ── TOOL PANEL (left) ── */}
       <div
-        className="glass"
         style={{
           position: 'absolute',
           left: 18,
@@ -227,9 +238,10 @@ export default function BuckGridProPage() {
           borderRadius: 20,
           width: isMobile ? 'calc(100vw - 36px)' : 214,
           zIndex: 2000,
-          background: 'linear-gradient(180deg, rgba(14,18,14,0.94) 0%, rgba(10,12,10,0.98) 100%)',
-          border: '1px solid rgba(217,164,65,0.16)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.32)',
+          background: 'linear-gradient(180deg, rgba(17,20,9,0.96) 0%, rgba(8,10,7,0.99) 100%)',
+          border: '1px solid rgba(196,146,40,0.18)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.44), inset 0 1px 0 rgba(196,146,40,0.08)',
+          backdropFilter: 'blur(20px)',
           display: 'flex',
           flexDirection: 'column',
           maxHeight: isMobile ? '60vh' : 'none',
@@ -237,13 +249,13 @@ export default function BuckGridProPage() {
       >
         {/* Scrollable content */}
         <div style={{ padding: 14, overflowY: 'auto', flex: 1, minHeight: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 900, color: '#d9a441', letterSpacing: '0.2em', marginBottom: 6, textTransform: 'uppercase' }}>
-            BUCKGRID PRO
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,146,40,0.7)', letterSpacing: '0.28em', marginBottom: 8, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
+            BuckGrid Pro
           </div>
-          <div style={{ color: '#f7f0de', fontSize: 18, fontWeight: 700, lineHeight: 1.1, marginBottom: 8, fontFamily: "'Playfair Display', serif" }}>
-            Tools
+          <div style={{ color: '#F0E8D4', fontSize: 17, fontWeight: 700, lineHeight: 1.1, marginBottom: 8, fontFamily: "'Playfair Display', serif" }}>
+            Habitat Tools
           </div>
-          <div style={{ color: 'rgba(237,227,197,0.68)', fontSize: 12, lineHeight: 1.55, marginBottom: 6 }}>
+          <div style={{ color: 'rgba(212,201,168,0.65)', fontSize: 11.5, lineHeight: 1.55, marginBottom: 6 }}>
             Search address, draw BORDER, paint features, then Lock & Scan.
           </div>
           <ToolGrid
@@ -256,40 +268,43 @@ export default function BuckGridProPage() {
         </div>
 
         {/* Pinned footer — always visible */}
-        <div style={{ padding: '10px 14px 14px', borderTop: '1px solid rgba(217,164,65,0.1)', flexShrink: 0 }}>
+        <div style={{ padding: '10px 14px 14px', borderTop: '1px solid rgba(196,146,40,0.12)', flexShrink: 0 }}>
           <button
             onClick={onLockBorder}
+            className="btn-lock-scan"
             style={{
               width: '100%',
-              background: 'linear-gradient(135deg, #d9a441 0%, #f6d58e 100%)',
-              color: '#17150f',
+              background: 'linear-gradient(135deg, #C49228 0%, #E8A820 55%, #C49228 100%)',
+              color: '#0D0E09',
               padding: '13px 0',
               borderRadius: 14,
               fontWeight: 900,
               cursor: 'pointer',
               border: 'none',
               fontSize: 11,
-              letterSpacing: '0.18em',
+              letterSpacing: '0.20em',
               marginBottom: 8,
               textTransform: 'uppercase',
-              boxShadow: '0 14px 30px rgba(217,164,65,0.24)',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'transform 0.15s, box-shadow 0.15s',
             }}
           >
-            Lock & Scan
+            Lock &amp; Scan
           </button>
           <button
             onClick={() => { mapRef.current?.wipeAll(); setPropertyAcres(0); setTonyFeatures([]) }}
             style={{
               width: '100%',
-              color: 'rgba(237,227,197,0.56)',
-              background: 'rgba(255,255,255,0.03)',
+              color: 'rgba(212,201,168,0.5)',
+              background: 'rgba(255,255,255,0.025)',
               border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: 12,
               padding: '10px 0',
               cursor: 'pointer',
               fontSize: 10,
-              letterSpacing: '0.14em',
+              letterSpacing: '0.16em',
               textTransform: 'uppercase',
+              fontFamily: "'DM Sans', sans-serif",
             }}
           >
             Wipe Canvas
@@ -315,27 +330,29 @@ export default function BuckGridProPage() {
 
       {/* ── ACRES DISPLAY (bottom-left) ── */}
       <div
-        className="glass"
         style={{
           position: 'absolute',
           left: 18,
-          bottom: isMobile ? 18 : 18,
-          padding: '14px 18px',
-          borderRadius: 20,
-          borderLeft: '4px solid #d9a441',
+          bottom: 18,
+          padding: '13px 18px',
+          borderRadius: 18,
+          borderLeft: '3px solid #C49228',
           zIndex: 2000,
-          background: 'linear-gradient(180deg, rgba(14,18,14,0.95) 0%, rgba(10,12,10,0.98) 100%)',
-          border: '1px solid rgba(217,164,65,0.16)',
+          background: 'linear-gradient(180deg, rgba(17,20,9,0.96) 0%, rgba(8,10,7,0.99) 100%)',
+          border: '1px solid rgba(196,146,40,0.20)',
+          borderLeftWidth: 3,
+          boxShadow: '0 16px 48px rgba(0,0,0,0.40)',
+          backdropFilter: 'blur(18px)',
         }}
       >
-        <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(237,227,197,0.62)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,146,40,0.65)', letterSpacing: '0.26em', textTransform: 'uppercase', marginBottom: 5, fontFamily: "'DM Mono', monospace" }}>
           Locked Footprint
         </div>
-        <div style={{ fontSize: 30, fontWeight: 900, color: '#d9a441', lineHeight: 1 }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: '#E8A820', lineHeight: 1, fontFamily: "'DM Mono', monospace" }}>
           {propertyAcres > 0 ? propertyAcres.toLocaleString() : '—'}
-          <span style={{ fontSize: 10, color: 'rgba(237,227,197,0.52)', marginLeft: 6, letterSpacing: '0.16em' }}>ACRES</span>
+          <span style={{ fontSize: 9, color: 'rgba(212,201,168,0.5)', marginLeft: 7, letterSpacing: '0.2em', fontFamily: "'DM Sans', sans-serif" }}>ACRES</span>
         </div>
-        <div style={{ color: 'rgba(237,227,197,0.64)', fontSize: 12, marginTop: 4 }}>
+        <div style={{ color: 'rgba(212,201,168,0.58)', fontSize: 11, marginTop: 5 }}>
           {propertyAcres > 0 ? 'Property locked. Ask Tony anything.' : 'Draw BORDER → Lock & Scan to start.'}
         </div>
       </div>
