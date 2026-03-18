@@ -160,12 +160,11 @@ export default function BuckGridProPage() {
       <div style={{
         position: 'absolute',
         top: isMobile ? 70 : 16,
-        left: isMobile ? 18 : '50%',
-        transform: isMobile ? 'none' : 'translateX(-50%)',
-        zIndex: 2000,
+        left: isMobile ? 18 : 246,
+        right: isMobile ? 18 : 370,
+        zIndex: 2001,
         display: 'flex',
         gap: 0,
-        width: isMobile ? 'calc(100vw - 36px)' : 'min(480px, calc(100vw - 280px))',
       }}>
         <input
           value={searchQuery}
