@@ -358,32 +358,37 @@ export default function BuckGridProPage() {
         </div>
       </div>
 
-      {/* ── CAPTURE BUTTON (top-right, left of Tony) ── */}
+      {/* ── CAPTURE BUTTON (bottom-right, above map edge, left of Tony) ── */}
       <button
         onClick={captureMap}
         title="Save map snapshot"
         style={{
           position: 'absolute',
-          top: 16,
+          bottom: isMobile ? 80 : 22,
           right: isMobile ? 18 : 366,
           zIndex: 2001,
           background: 'rgba(8,10,7,0.90)',
           border: '1px solid rgba(196,146,40,0.26)',
           borderRadius: 12,
           color: '#C49228',
-          width: 42,
-          height: 42,
+          padding: '8px 14px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 7,
           cursor: 'pointer',
           backdropFilter: 'blur(16px)',
           boxShadow: '0 8px 24px rgba(0,0,0,0.30)',
-          fontSize: 18,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          fontFamily: "'DM Sans', sans-serif",
           transition: 'background 0.15s, border-color 0.15s',
+          whiteSpace: 'nowrap',
         }}
       >
-        📷
+        <span style={{ fontSize: 15 }}>📷</span>
+        {!isMobile && <span>Save Map</span>}
       </button>
 
       {/* ── TONY CHAT (right) ── */}
