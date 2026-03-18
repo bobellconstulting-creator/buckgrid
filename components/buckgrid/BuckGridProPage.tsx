@@ -222,39 +222,79 @@ export default function BuckGridProPage() {
           position: 'absolute',
           left: 18,
           top: isMobile ? 130 : 72,
-          padding: 14,
+          bottom: isMobile ? 'auto' : 18,
+          padding: 0,
           borderRadius: 20,
           width: isMobile ? 'calc(100vw - 36px)' : 214,
           zIndex: 2000,
           background: 'linear-gradient(180deg, rgba(14,18,14,0.94) 0%, rgba(10,12,10,0.98) 100%)',
           border: '1px solid rgba(217,164,65,0.16)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.32)',
-          maxHeight: isMobile ? 'auto' : 'calc(100vh - 80px)',
-          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: isMobile ? '60vh' : 'none',
         }}
       >
-        <div style={{ fontSize: 10, fontWeight: 900, color: '#d9a441', letterSpacing: '0.2em', marginBottom: 6, textTransform: 'uppercase' }}>
-          BUCKGRID PRO
+        {/* Scrollable content */}
+        <div style={{ padding: 14, overflowY: 'auto', flex: 1, minHeight: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 900, color: '#d9a441', letterSpacing: '0.2em', marginBottom: 6, textTransform: 'uppercase' }}>
+            BUCKGRID PRO
+          </div>
+          <div style={{ color: '#f7f0de', fontSize: 18, fontWeight: 700, lineHeight: 1.1, marginBottom: 8, fontFamily: "'Playfair Display', serif" }}>
+            Tools
+          </div>
+          <div style={{ color: 'rgba(237,227,197,0.68)', fontSize: 12, lineHeight: 1.55, marginBottom: 6 }}>
+            Search address, draw BORDER, paint features, then Lock & Scan.
+          </div>
+          <ToolGrid
+            tools={TOOLS}
+            activeToolId={activeTool.id}
+            brushSize={brushSize}
+            onSelectTool={setActiveTool}
+            onBrushSize={setBrushSize}
+          />
         </div>
-        <div style={{ color: '#f7f0de', fontSize: 18, fontWeight: 700, lineHeight: 1.1, marginBottom: 8, fontFamily: "'Playfair Display', serif" }}>
-          Tools
+
+        {/* Pinned footer — always visible */}
+        <div style={{ padding: '10px 14px 14px', borderTop: '1px solid rgba(217,164,65,0.1)', flexShrink: 0 }}>
+          <button
+            onClick={onLockBorder}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #d9a441 0%, #f6d58e 100%)',
+              color: '#17150f',
+              padding: '13px 0',
+              borderRadius: 14,
+              fontWeight: 900,
+              cursor: 'pointer',
+              border: 'none',
+              fontSize: 11,
+              letterSpacing: '0.18em',
+              marginBottom: 8,
+              textTransform: 'uppercase',
+              boxShadow: '0 14px 30px rgba(217,164,65,0.24)',
+            }}
+          >
+            Lock & Scan
+          </button>
+          <button
+            onClick={() => { mapRef.current?.wipeAll(); setPropertyAcres(0); setTonyFeatures([]) }}
+            style={{
+              width: '100%',
+              color: 'rgba(237,227,197,0.56)',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 12,
+              padding: '10px 0',
+              cursor: 'pointer',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Wipe Canvas
+          </button>
         </div>
-        <div style={{ color: 'rgba(237,227,197,0.68)', fontSize: 12, lineHeight: 1.55, marginBottom: 6 }}>
-          Start with an address search, draw your BORDER, then Lock & Scan for Tony's habitat audit.
-        </div>
-        <ToolGrid
-          tools={TOOLS}
-          activeToolId={activeTool.id}
-          brushSize={brushSize}
-          onSelectTool={setActiveTool}
-          onBrushSize={setBrushSize}
-          onLockBorder={onLockBorder}
-          onWipeAll={() => {
-            mapRef.current?.wipeAll()
-            setPropertyAcres(0)
-            setTonyFeatures([])
-          }}
-        />
       </div>
 
       {/* ── TONY CHAT (right) ── */}

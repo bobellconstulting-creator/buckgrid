@@ -9,11 +9,9 @@ type Props = {
   brushSize: number
   onSelectTool: (t: Tool) => void
   onBrushSize: (n: number) => void
-  onLockBorder: () => void
-  onWipeAll: () => void
 }
 
-function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize, onLockBorder, onWipeAll }: Props) {
+function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize }: Props) {
   return (
     <>
       <div style={{ marginBottom: 12 }}>
@@ -106,44 +104,6 @@ function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize, o
         />
       </div>
 
-      <button
-        onClick={onLockBorder}
-        style={{
-          width: '100%',
-          background: 'linear-gradient(135deg, #d9a441 0%, #f6d58e 100%)',
-          color: '#17150f',
-          padding: '13px 0',
-          borderRadius: 14,
-          fontWeight: 900,
-          cursor: 'pointer',
-          border: 'none',
-          fontSize: 11,
-          letterSpacing: '0.18em',
-          marginBottom: 8,
-          textTransform: 'uppercase',
-          boxShadow: '0 14px 30px rgba(217,164,65,0.24)',
-        }}
-      >
-        Lock & Scan
-      </button>
-
-      <button
-        onClick={onWipeAll}
-        style={{
-          width: '100%',
-          color: 'rgba(237,227,197,0.56)',
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: 12,
-          padding: '10px 0',
-          cursor: 'pointer',
-          fontSize: 10,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-        }}
-      >
-        Wipe Canvas
-      </button>
     </>
   )
 }
