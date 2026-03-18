@@ -297,52 +297,70 @@ const TonyChat = forwardRef<TonyChatHandle, {
           right: 12,
           top: isMobile ? 'auto' : 12,
           bottom: isMobile ? 12 : 'auto',
-          width: isOpen ? (isMobile ? 'calc(100vw - 24px)' : 'min(340px, calc(100vw - 24px))') : 54,
-          borderRadius: 24,
+          width: isOpen ? (isMobile ? 'calc(100vw - 24px)' : 'min(340px, calc(100vw - 24px))') : 58,
+          borderRadius: 22,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           maxHeight: isMobile ? '70vh' : 'calc(100vh - 24px)',
           transition: 'width 0.25s ease',
           zIndex: 2000,
-          background: 'linear-gradient(180deg, rgba(15,20,14,0.98) 0%, rgba(8,12,8,0.99) 100%)',
-          border: '1px solid rgba(217,164,65,0.22)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(217,164,65,0.08) inset',
-          backdropFilter: 'blur(20px)',
+          background: 'linear-gradient(180deg, rgba(13,17,9,0.99) 0%, rgba(8,10,6,1.0) 100%)',
+          border: '1px solid rgba(196,146,40,0.24)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.60), inset 0 1px 0 rgba(196,146,40,0.10)',
+          backdropFilter: 'blur(24px)',
         }}
       >
         {/* Header */}
         <div
           onClick={() => setIsOpen(!isOpen)}
           style={{
-            padding: '14px 18px 12px',
-            background: 'linear-gradient(180deg, rgba(22,28,20,0.98) 0%, rgba(14,18,13,0.98) 100%)',
+            padding: isOpen ? '16px 18px 14px' : '16px 10px',
+            background: 'linear-gradient(180deg, rgba(22,28,14,0.99) 0%, rgba(15,19,10,0.99) 100%)',
             cursor: 'pointer',
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: isOpen ? 'space-between' : 'center',
             alignItems: 'center',
             flexShrink: 0,
-            borderBottom: '1px solid rgba(217,164,65,0.12)',
-            gap: 10,
+            borderBottom: isOpen ? '1px solid rgba(196,146,40,0.14)' : 'none',
+            gap: 12,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 18, lineHeight: 1 }}>🦌</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            {/* Tony logo avatar */}
+            <div style={{
+              width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+              background: 'linear-gradient(145deg, #1C2213 0%, #263018 100%)',
+              border: '1px solid rgba(196,146,40,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2 L12 9" stroke="#C49228" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M12 9 L7.5 3.5" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 9 L16.5 3.5" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 9 L10 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+                <path d="M12 9 L14 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+                <rect x="4.5" y="13" width="15" height="9.5" rx="1.5" stroke="#C49228" strokeWidth="1.5" fill="none"/>
+                <line x1="4.5" y1="17.5" x2="19.5" y2="17.5" stroke="#C49228" strokeWidth="0.9" opacity="0.55"/>
+                <line x1="12" y1="13" x2="12" y2="22.5" stroke="#C49228" strokeWidth="0.9" opacity="0.55"/>
+              </svg>
+            </div>
             {isOpen && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 900, color: '#d9a441', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                  TONY
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#F0E8D4', letterSpacing: '0.02em', lineHeight: 1.1 }}>
+                  Tony Greer
                 </div>
-                <div style={{ fontSize: 9, color: 'rgba(237,227,197,0.45)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                  Elite Habitat Intelligence
+                <div style={{ fontSize: 9, color: 'rgba(196,146,40,0.65)', letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginTop: 2 }}>
+                  AI Habitat Consultant
                 </div>
               </div>
             )}
           </div>
           {isOpen && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 8px rgba(132,204,22,0.8)', display: 'block' }} />
-              <span style={{ fontSize: 9, color: 'rgba(237,227,197,0.35)', letterSpacing: '0.1em' }}>ONLINE</span>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 8px rgba(132,204,22,0.9)', display: 'block' }} />
+              <span style={{ fontSize: 9, color: 'rgba(132,204,22,0.60)', letterSpacing: '0.12em', fontFamily: "'DM Mono', monospace" }}>LIVE</span>
             </div>
           )}
         </div>
@@ -364,9 +382,9 @@ const TonyChat = forwardRef<TonyChatHandle, {
               }}
             >
               {chat.map((m, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {m.role === 'tony' && (
-                    <div style={{ fontSize: 9, color: '#d9a441', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', paddingLeft: 2 }}>
+                    <div style={{ fontSize: 8.5, color: 'rgba(196,146,40,0.65)', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', paddingLeft: 3, fontFamily: "'DM Mono', monospace" }}>
                       Tony
                     </div>
                   )}
@@ -374,18 +392,24 @@ const TonyChat = forwardRef<TonyChatHandle, {
                     style={{
                       alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                       background: m.role === 'user'
-                        ? 'linear-gradient(135deg, #c4922a 0%, #e8b84b 100%)'
-                        : 'rgba(255,255,255,0.04)',
-                      color: m.role === 'user' ? '#17150f' : '#f0e8d4',
-                      padding: '10px 13px',
+                        ? 'linear-gradient(135deg, #C49228 0%, #E8A820 100%)'
+                        : 'rgba(28,34,19,0.70)',
+                      color: m.role === 'user' ? '#0D0E09' : '#E8E0CC',
+                      padding: '10px 14px',
                       borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
                       fontSize: 12,
-                      maxWidth: '92%',
+                      fontWeight: m.role === 'user' ? 600 : 400,
+                      maxWidth: '93%',
                       lineHeight: 1.7,
-                      border: m.role === 'user' ? 'none' : '1px solid rgba(217,164,65,0.14)',
-                      borderLeft: m.role === 'tony' ? '2px solid rgba(217,164,65,0.5)' : undefined,
+                      border: m.role === 'user'
+                        ? 'none'
+                        : '1px solid rgba(196,146,40,0.16)',
+                      borderLeft: m.role === 'tony' ? '2px solid rgba(196,146,40,0.55)' : undefined,
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
+                      boxShadow: m.role === 'user'
+                        ? '0 6px 20px rgba(196,146,40,0.22)'
+                        : 'none',
                     }}
                   >
                     {m.text}
@@ -393,44 +417,43 @@ const TonyChat = forwardRef<TonyChatHandle, {
                 </div>
               ))}
               {loading && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 2px' }}>
-                  <div style={{
-                    display: 'flex', gap: 4,
-                  }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 3px' }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
                     {[0, 1, 2].map(i => (
                       <div key={i} style={{
                         width: 5, height: 5, borderRadius: '50%',
-                        background: '#d9a441',
+                        background: '#C49228',
                         opacity: 0.6,
-                        animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+                        animation: `pulse 1.2s ease-in-out ${i * 0.22}s infinite`,
                       }} />
                     ))}
                   </div>
-                  <div style={{ color: 'rgba(217,164,65,0.6)', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                    Tony is reading the terrain...
+                  <div style={{ color: 'rgba(196,146,40,0.65)', fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
+                    Reading terrain...
                   </div>
                 </div>
               )}
             </div>
 
             {/* Quick prompts */}
-            <div style={{ padding: '0 12px 10px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ padding: '0 12px 10px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {quickPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => !loading && runPrompt(prompt)}
                   disabled={loading}
                   style={{
-                    background: 'rgba(217,164,65,0.08)',
-                    border: '1px solid rgba(217,164,65,0.2)',
-                    color: '#d9a441',
+                    background: 'rgba(196,146,40,0.07)',
+                    border: '1px solid rgba(196,146,40,0.22)',
+                    color: '#C49228',
                     borderRadius: 999,
-                    padding: '6px 11px',
-                    fontSize: 10.5,
+                    padding: '5px 11px',
+                    fontSize: 10,
                     cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.5 : 1,
+                    opacity: loading ? 0.45 : 1,
                     transition: 'all 0.15s',
                     letterSpacing: '0.02em',
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   {prompt}
@@ -441,30 +464,31 @@ const TonyChat = forwardRef<TonyChatHandle, {
             {/* Input */}
             <div
               style={{
-                padding: '10px 12px 12px',
+                padding: '10px 12px 13px',
                 display: 'flex',
                 gap: 8,
-                background: 'rgba(8,12,8,0.98)',
+                background: 'rgba(8,10,6,0.99)',
                 flexShrink: 0,
-                borderTop: '1px solid rgba(217,164,65,0.1)',
+                borderTop: '1px solid rgba(196,146,40,0.10)',
               }}
             >
               <input
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-                placeholder="Ask Tony where to hunt, build, or improve..."
+                placeholder="Ask Tony anything about your ground..."
                 disabled={loading}
                 style={{
                   flex: 1,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(217,164,65,0.18)',
-                  color: '#f0e8d4',
+                  background: 'rgba(28,34,19,0.50)',
+                  border: '1px solid rgba(196,146,40,0.20)',
+                  color: '#F0E8D4',
                   padding: '11px 13px',
-                  borderRadius: 14,
+                  borderRadius: 13,
                   fontSize: 12,
                   outline: 'none',
-                  opacity: loading ? 0.6 : 1,
+                  opacity: loading ? 0.55 : 1,
+                  fontFamily: "'DM Sans', sans-serif",
                 }}
               />
               <button
@@ -472,18 +496,18 @@ const TonyChat = forwardRef<TonyChatHandle, {
                 disabled={loading}
                 style={{
                   background: loading
-                    ? 'rgba(217,164,65,0.3)'
-                    : 'linear-gradient(135deg, #c4922a 0%, #e8b84b 100%)',
+                    ? 'rgba(196,146,40,0.25)'
+                    : 'linear-gradient(135deg, #C49228 0%, #E8A820 100%)',
                   border: 'none',
-                  borderRadius: 14,
+                  borderRadius: 13,
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  color: '#17150f',
-                  fontWeight: 'bold',
+                  color: '#0D0E09',
+                  fontWeight: 900,
                   padding: '0 16px',
                   fontSize: 14,
                   flexShrink: 0,
-                  transition: 'background 0.2s',
-                  boxShadow: loading ? 'none' : '0 8px 20px rgba(217,164,65,0.25)',
+                  transition: 'background 0.2s, box-shadow 0.2s',
+                  boxShadow: loading ? 'none' : '0 6px 18px rgba(196,146,40,0.30)',
                 }}
               >
                 ➤

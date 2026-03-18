@@ -14,20 +14,20 @@ type Props = {
 function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize }: Props) {
   return (
     <>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 10, color: 'rgba(237,227,197,0.64)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
-          Paint Plan
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 8.5, color: 'rgba(196,146,40,0.6)', letterSpacing: '0.26em', textTransform: 'uppercase', marginBottom: 10, fontFamily: "'DM Mono', monospace" }}>
+          Field Protocol
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
           {[
             ['1', 'Search address above'],
             ['2', 'Draw BORDER over property'],
             ['3', 'Paint habitat features'],
             ['4', 'Lock & Scan for Tony\'s plan'],
           ].map(([num, label]) => (
-            <div key={num} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(217,164,65,0.18)', border: '1px solid rgba(217,164,65,0.32)', color: '#d9a441', fontSize: 9, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{num}</span>
-              <span style={{ color: 'rgba(237,227,197,0.58)', fontSize: 10, lineHeight: 1.3 }}>{label}</span>
+            <div key={num} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 17, height: 17, borderRadius: 5, background: 'rgba(196,146,40,0.12)', border: '1px solid rgba(196,146,40,0.30)', color: '#C49228', fontSize: 8.5, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: "'DM Mono', monospace" }}>{num}</span>
+              <span style={{ color: 'rgba(212,201,168,0.55)', fontSize: 10.5, lineHeight: 1.3 }}>{label}</span>
             </div>
           ))}
         </div>
@@ -86,13 +86,13 @@ function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize }:
         ))}
       </div>
 
-      <div style={{ marginBottom: 14, padding: '12px 12px 10px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontSize: 10, color: 'rgba(237,227,197,0.64)', marginBottom: 8, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-          Brush Size
+      <div style={{ marginBottom: 14, padding: '12px 12px 10px', borderRadius: 13, background: 'rgba(28,34,19,0.35)', border: '1px solid rgba(196,146,40,0.12)' }}>
+        <div style={{ fontSize: 8.5, color: 'rgba(196,146,40,0.60)', marginBottom: 8, letterSpacing: '0.24em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
+          Brush Coverage
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 11, color: '#f7f0de', fontWeight: 700 }}>Coverage</span>
-          <span style={{ fontSize: 11, color: '#d9a441', fontFamily: "'DM Mono', monospace" }}>{brushSize}px</span>
+          <span style={{ fontSize: 11, color: '#D4C9A8', fontWeight: 600 }}>Radius</span>
+          <span style={{ fontSize: 11, color: '#E8A820', fontFamily: "'DM Mono', monospace", fontWeight: 700 }}>{brushSize}px</span>
         </div>
         <input
           type="range"
@@ -100,7 +100,7 @@ function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize }:
           max={150}
           value={brushSize}
           onChange={e => onBrushSize(Number(e.target.value))}
-          style={{ width: '100%', accentColor: '#d9a441' }}
+          style={{ width: '100%', accentColor: '#C49228' }}
         />
       </div>
 
