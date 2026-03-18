@@ -247,17 +247,48 @@ export default function BuckGridProPage() {
           maxHeight: isMobile ? '60vh' : 'none',
         }}
       >
+        {/* Panel header — branded */}
+        <div style={{
+          padding: '16px 14px 14px',
+          background: 'linear-gradient(180deg, rgba(28,34,19,0.90) 0%, rgba(17,20,9,0.60) 100%)',
+          borderBottom: '1px solid rgba(196,146,40,0.14)',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              background: 'linear-gradient(145deg, #1C2213 0%, #263018 100%)',
+              border: '1px solid rgba(196,146,40,0.32)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2 L12 9" stroke="#C49228" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M12 9 L7.5 3.5" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 9 L16.5 3.5" stroke="#C49228" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 9 L10 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+                <path d="M12 9 L14 6" stroke="#C49228" strokeWidth="1.2" strokeLinecap="round"/>
+                <rect x="4.5" y="13" width="15" height="9.5" rx="1.5" stroke="#C49228" strokeWidth="1.5" fill="none"/>
+                <line x1="4.5" y1="17.5" x2="19.5" y2="17.5" stroke="#C49228" strokeWidth="0.9" opacity="0.55"/>
+                <line x1="12" y1="13" x2="12" y2="22.5" stroke="#C49228" strokeWidth="0.9" opacity="0.55"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 8.5, fontWeight: 700, color: 'rgba(196,146,40,0.65)', letterSpacing: '0.28em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", lineHeight: 1 }}>
+                BuckGrid Pro
+              </div>
+              <div style={{ color: '#F0E8D4', fontSize: 15, fontWeight: 700, lineHeight: 1.15, fontFamily: "'Playfair Display', serif", marginTop: 2 }}>
+                Habitat Tools
+              </div>
+            </div>
+          </div>
+          <div style={{ height: 1, background: 'linear-gradient(90deg, rgba(196,146,40,0.30) 0%, transparent 100%)', marginBottom: 10 }} />
+          <div style={{ color: 'rgba(212,201,168,0.55)', fontSize: 11, lineHeight: 1.5 }}>
+            Search → Border → Paint → Lock & Scan
+          </div>
+        </div>
+
         {/* Scrollable content */}
-        <div style={{ padding: 14, overflowY: 'auto', flex: 1, minHeight: 0 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,146,40,0.7)', letterSpacing: '0.28em', marginBottom: 8, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
-            BuckGrid Pro
-          </div>
-          <div style={{ color: '#F0E8D4', fontSize: 17, fontWeight: 700, lineHeight: 1.1, marginBottom: 8, fontFamily: "'Playfair Display', serif" }}>
-            Habitat Tools
-          </div>
-          <div style={{ color: 'rgba(212,201,168,0.65)', fontSize: 11.5, lineHeight: 1.55, marginBottom: 6 }}>
-            Search address, draw BORDER, paint features, then Lock & Scan.
-          </div>
+        <div style={{ padding: '12px 14px 4px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
           <ToolGrid
             tools={TOOLS}
             activeToolId={activeTool.id}
@@ -328,11 +359,12 @@ export default function BuckGridProPage() {
         onTonyResponse={useCallback((parsed: ParsedTonyResponse) => setTonyFeatures(parsed.features), [])}
       />
 
-      {/* ── ACRES DISPLAY (bottom-left) ── */}
+      {/* ── ACRES DISPLAY (bottom-center) ── */}
       <div
         style={{
           position: 'absolute',
-          left: 18,
+          left: '50%',
+          transform: 'translateX(-50%)',
           bottom: 18,
           padding: '13px 18px',
           borderRadius: 18,
