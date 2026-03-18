@@ -17,6 +17,7 @@ export const TOOLS: Tool[] = [
   { id: 'egyptian',    name: 'EGYPTIAN',  color: '#fb923c', icon: 'Egyptian',    badge: 'EG' },
   { id: 'switchgrass', name: 'SWITCH',    color: '#fdba74', icon: 'Switchgrass', badge: 'SW' },
   { id: 'bedding',     name: 'HINGE',     color: '#713f12', icon: 'Bedding',     badge: 'HG' },
+  { id: 'water',       name: 'WATER',     color: '#00BFFF', icon: 'Water',       badge: 'WA' },
   { id: 'stand',       name: 'STAND',     color: '#ef4444', icon: 'Stand',       badge: 'ST' },
   { id: 'focus',       name: 'FOCUS',     color: '#FF0000', icon: 'Focus',       badge: 'FC' },
 ]

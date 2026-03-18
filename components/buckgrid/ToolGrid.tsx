@@ -17,8 +17,21 @@ function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize, o
   return (
     <>
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 10, color: 'rgba(237,227,197,0.64)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
+        <div style={{ fontSize: 10, color: 'rgba(237,227,197,0.64)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
           Paint Plan
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
+          {[
+            ['1', 'Search address above'],
+            ['2', 'Draw BORDER over property'],
+            ['3', 'Paint habitat features'],
+            ['4', 'Lock & Scan for Tony\'s plan'],
+          ].map(([num, label]) => (
+            <div key={num} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(217,164,65,0.18)', border: '1px solid rgba(217,164,65,0.32)', color: '#d9a441', fontSize: 9, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{num}</span>
+              <span style={{ color: 'rgba(237,227,197,0.58)', fontSize: 10, lineHeight: 1.3 }}>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -111,7 +124,7 @@ function ToolGrid({ tools, activeToolId, brushSize, onSelectTool, onBrushSize, o
           boxShadow: '0 14px 30px rgba(217,164,65,0.24)',
         }}
       >
-        Lock Border And Scan
+        Lock & Scan
       </button>
 
       <button

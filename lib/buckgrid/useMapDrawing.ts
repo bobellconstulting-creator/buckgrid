@@ -1,6 +1,7 @@
 import { useRef, useEffect, useMemo, useCallback } from 'react'
 import { area as turfArea } from '@turf/area'
 import { FOOD_TYPES } from './tools'
+import type { TonyFeature } from '@/lib/parse-tony-response'
 
 export type LayerType = 'boundary' | 'bedding' | 'food' | 'water' | 'path' | 'stand' | 'focus' | 'other'
 
@@ -40,6 +41,7 @@ interface Props {
   containerRef: React.RefObject<HTMLDivElement>
   activeTool: string
   brushSize: number
+  tonyFeatures: TonyFeature[]
 }
 
 const TOOL_COLORS: Record<string, string> = {
@@ -108,10 +110,53 @@ function boundsToFeature(bounds: any) {
   }
 }
 
-export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
+function clampCoordinatePair(pair: number[], bounds: { west: number; south: number; east: number; north: number }) {
+  const lng = Math.min(bounds.east, Math.max(bounds.west, pair[0] ?? bounds.west))
+  const lat = Math.min(bounds.north, Math.max(bounds.south, pair[1] ?? bounds.south))
+  return [lng, lat]
+}
+
+function clampFeature(feature: TonyFeature, bounds: { west: number; south: number; east: number; north: number }): TonyFeature {
+  const geometry = feature.geometry
+
+  if (geometry.type === 'Point' && Array.isArray(geometry.coordinates)) {
+    return {
+      ...feature,
+      geometry: {
+        ...geometry,
+        coordinates: clampCoordinatePair(geometry.coordinates as number[], bounds),
+      },
+    }
+  }
+
+  if (geometry.type === 'LineString' && Array.isArray(geometry.coordinates)) {
+    return {
+      ...feature,
+      geometry: {
+        ...geometry,
+        coordinates: (geometry.coordinates as number[][]).map((pair) => clampCoordinatePair(pair, bounds)),
+      },
+    }
+  }
+
+  if (geometry.type === 'Polygon' && Array.isArray(geometry.coordinates)) {
+    return {
+      ...feature,
+      geometry: {
+        ...geometry,
+        coordinates: (geometry.coordinates as number[][][]).map((ring) => ring.map((pair) => clampCoordinatePair(pair, bounds))),
+      },
+    }
+  }
+
+  return feature
+}
+
+export function useMapDrawing({ containerRef, activeTool, brushSize, tonyFeatures }: Props) {
   const mapRef = useRef<any>(null)
   const leafletRef = useRef<any>(null)
   const drawnItemsRef = useRef<any>(null)
+  const tonyItemsRef = useRef<any>(null)
   const currentDrawRef = useRef<any>(null)
   const dragStartRef = useRef<any>(null)
   const pendingViewRef = useRef<{ center: [number, number]; zoom: number } | null>(null)
@@ -121,8 +166,9 @@ export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
     if (!containerRef.current || mapRef.current) return
 
     import('leaflet').then(({ default: L }) => {
+      if (!containerRef.current) return
       leafletRef.current = L
-      const map = L.map(containerRef.current!, {
+      const map = L.map(containerRef.current, {
         zoomControl: false,
         attributionControl: false,
       }).setView([38.5, -98.0], 7)
@@ -133,8 +179,11 @@ export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
       }).addTo(map)
 
       const drawnItems = new L.FeatureGroup()
+      const tonyItems = new L.FeatureGroup()
       map.addLayer(drawnItems)
+      map.addLayer(tonyItems)
       drawnItemsRef.current = drawnItems
+      tonyItemsRef.current = tonyItems
       mapRef.current = map
       syncMapInteractions(map, activeTool)
       containerRef.current!.style.cursor = activeTool === 'nav' ? 'grab' : 'crosshair'
@@ -155,6 +204,7 @@ export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
         mapRef.current.remove()
         mapRef.current = null
         drawnItemsRef.current = null
+        tonyItemsRef.current = null
       }
     }
   }, [containerRef])
@@ -274,6 +324,83 @@ export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
     }
   }, [activeTool, brushSize])
 
+  useEffect(() => {
+    const map = mapRef.current
+    const L = leafletRef.current
+    const tonyItems = tonyItemsRef.current
+    if (!map || !L || !tonyItems) return
+
+    tonyItems.clearLayers()
+    if (!tonyFeatures.length) return
+
+    const bounds = map.getBounds?.()
+    if (!bounds) return
+
+    const clampBounds = {
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+    }
+
+    const makeLabel = (text: string) => ({
+      permanent: true,
+      direction: 'center' as const,
+      className: 'buckgrid-tony-label',
+      opacity: 0.95,
+    })
+
+    for (const rawFeature of tonyFeatures) {
+      const feature = clampFeature(rawFeature, clampBounds)
+      const { geometry, style, type, label } = feature
+      let layer: any = null
+
+      if (geometry.type === 'Polygon') {
+        layer = L.polygon(
+          (geometry.coordinates as number[][][]).map((ring) => ring.map(([lng, lat]) => [lat, lng])),
+          {
+            color: style.color,
+            fillColor: style.color,
+            fillOpacity: style.fillOpacity,
+            weight: style.weight,
+          },
+        )
+      } else if (geometry.type === 'LineString') {
+        const dashed = type === 'sneak_trail' || type === 'access_trail'
+        layer = L.polyline(
+          (geometry.coordinates as number[][]).map(([lng, lat]) => [lat, lng]),
+          {
+            color: style.color,
+            weight: style.weight,
+            opacity: 0.95,
+            dashArray: dashed ? '8 6' : undefined,
+          },
+        )
+      } else if (geometry.type === 'Point') {
+        const [lng, lat] = geometry.coordinates as number[]
+        const markerHtml = type === 'pinch_point'
+          ? `<div style="width:16px;height:16px;background:${style.color};transform:rotate(45deg);border:2px solid #fff3;border-radius:2px;box-shadow:0 0 0 4px rgba(255,68,68,0.18);"></div>`
+          : `<div style="width:18px;height:18px;border-radius:999px;background:${style.color};border:2px solid rgba(14,18,9,0.95);box-shadow:0 0 0 4px rgba(217,164,65,0.18);"></div>`
+        layer = L.marker([lat, lng], {
+          icon: L.divIcon({
+            html: markerHtml,
+            className: 'buckgrid-tony-marker',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          }),
+        })
+      }
+
+      if (!layer) continue
+
+      if (typeof layer.bindTooltip === 'function') {
+        layer.bindTooltip(label, makeLabel(label))
+      }
+
+      tonyItems.addLayer(layer)
+    }
+  }, [tonyFeatures])
+
   const lockAndBake = useCallback(async (): Promise<LockResult> => {
     const empty: LockResult = {
       count: 0,
@@ -320,9 +447,13 @@ export function useMapDrawing({ containerRef, activeTool, brushSize }: Props) {
     }
 
     if (!boundaryGeo && mapRef.current) {
-      boundaryGeo = boundsToFeature(mapRef.current.getBounds())
-      summary.boundary = 1
-      allFeatures.push(boundaryGeo)
+      const zoom = mapRef.current.getZoom?.() ?? 0
+      // Only use viewport as boundary if zoomed in enough (zoom ≥ 11 = county level)
+      if (zoom >= 11) {
+        boundaryGeo = boundsToFeature(mapRef.current.getBounds())
+        summary.boundary = 1
+        allFeatures.push(boundaryGeo)
+      }
     }
 
     if (!boundaryGeo) return empty

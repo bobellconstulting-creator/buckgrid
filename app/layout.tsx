@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col overflow-x-hidden">
+      <body style={{ margin: 0, padding: 0, overflow: 'hidden', width: '100vw', height: '100dvh', position: 'relative' }}>
         {children}
       </body>
     </html>

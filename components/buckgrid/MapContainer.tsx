@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useImperativeHandle, useRef } from 'react'
 import { useMapDrawing, type LayerSummary, type LockResult } from '@/lib/buckgrid/useMapDrawing'
+import type { TonyFeature } from '@/lib/parse-tony-response'
 import 'leaflet/dist/leaflet.css'
 
 export interface MapContainerHandle {
@@ -21,11 +22,12 @@ export interface MapContainerHandle {
 interface Props {
   activeTool: any
   brushSize: number
+  tonyFeatures: TonyFeature[]
 }
 
-const MapContainer = forwardRef<MapContainerHandle, Props>(({ activeTool, brushSize }, ref) => {
+const MapContainer = forwardRef<MapContainerHandle, Props>(({ activeTool, brushSize, tonyFeatures }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { api } = useMapDrawing({ containerRef, activeTool: activeTool.id, brushSize })
+  const { api } = useMapDrawing({ containerRef, activeTool: activeTool.id, brushSize, tonyFeatures })
 
   useImperativeHandle(ref, () => ({
     lockBoundary: () => {
@@ -39,7 +41,7 @@ const MapContainer = forwardRef<MapContainerHandle, Props>(({ activeTool, brushS
     getSpatialContext: () => api.getSpatialContext(),
   }))
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+  return <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
 })
 
 MapContainer.displayName = 'MapContainer'

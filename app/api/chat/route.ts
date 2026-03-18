@@ -70,13 +70,14 @@ function getTonyChatModelConfig() {
 }
 
 export async function POST(req: NextRequest) {
+  let body: ChatRequestBody | null = null
   try {
     const modelConfig = getTonyChatModelConfig()
     if (!modelConfig) {
       return NextResponse.json({ error: 'No Tony chat model configured' }, { status: 500 })
     }
 
-    const body = await req.json() as ChatRequestBody
+    body = await req.json() as ChatRequestBody
     const message = body.message?.trim() || ''
     const imageDataUrl = body.imageDataUrl
 
@@ -111,7 +112,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply })
   } catch (err) {
     console.error('[Tony Chat API]', err)
-    const body = await req.clone().json().catch(() => null) as ChatRequestBody | null
     const fallbackReply = buildFallbackTonyReply(body?.message || '', Boolean(body?.imageDataUrl))
     return NextResponse.json({
       reply: fallbackReply,

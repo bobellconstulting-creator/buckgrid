@@ -81,8 +81,8 @@ Property Details:
 - Size: ${acreage} acres
 - Region: ${region}
 - State: ${state}
-- Map Bounds SW: [${mapBounds.sw[0].toFixed(6)}, ${mapBounds.sw[1].toFixed(6)}]
-- Map Bounds NE: [${mapBounds.ne[0].toFixed(6)}, ${mapBounds.ne[1].toFixed(6)}]
+- Map Bounds SW [lng,lat]: [${mapBounds.sw[0].toFixed(6)}, ${mapBounds.sw[1].toFixed(6)}]
+- Map Bounds NE [lng,lat]: [${mapBounds.ne[0].toFixed(6)}, ${mapBounds.ne[1].toFixed(6)}]
 - Property Boundary GeoJSON: ${JSON.stringify(boundaryGeoJSON)}
 
 Analyze this satellite image and provide your full habitat consultation.

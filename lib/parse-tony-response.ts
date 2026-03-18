@@ -26,6 +26,63 @@ export interface ParsedTonyResponse {
   rawText: string
 }
 
+const VALID_GEOMETRY_TYPES = new Set(["Polygon", "LineString", "Point"])
+const VALID_FEATURE_TYPES = new Set<string>([
+  "buck_bedding", "doe_bedding", "sanctuary", "food_plot", "staging_area",
+  "stand_site", "sneak_trail", "access_trail", "cover_strip", "pinch_point",
+  "water", "shooting_lane",
+])
+
+function isValidFeature(f: unknown): f is Omit<TonyFeature, 'style'> {
+  if (!f || typeof f !== 'object') return false
+  const feature = f as Record<string, unknown>
+  if (typeof feature.id !== 'string' || !feature.id) return false
+  if (typeof feature.type !== 'string' || !VALID_FEATURE_TYPES.has(feature.type)) return false
+  if (typeof feature.label !== 'string') return false
+  const geo = feature.geometry as Record<string, unknown> | null | undefined
+  if (!geo || typeof geo !== 'object') return false
+  if (!VALID_GEOMETRY_TYPES.has(geo.type as string)) return false
+  if (!Array.isArray(geo.coordinates)) return false
+  return true
+}
+
+function normalizeFeaturesArray(rawFeatures: unknown[]): TonyFeature[] {
+  const seenIds = new Set<string>()
+  return rawFeatures
+    .filter(isValidFeature)
+    .map((f, idx) => {
+      // Ensure unique IDs
+      let id = f.id
+      if (seenIds.has(id)) id = `${id}_${idx}`
+      seenIds.add(id)
+
+      const featureType = f.type as FeatureType
+      const baseStyle = FEATURE_STYLES[featureType] ?? { color: "#ffffff", fillOpacity: 0.3, weight: 2 }
+      const inlineStyle = (f as Record<string, unknown>).style as Partial<TonyFeature['style']> | undefined
+
+      return {
+        id,
+        type: featureType,
+        label: f.label || featureType.replace(/_/g, ' '),
+        priority: typeof f.priority === 'number' ? f.priority : idx + 1,
+        reason: typeof f.reason === 'string' ? f.reason : '',
+        geometry: f.geometry,
+        style: { ...baseStyle, ...(inlineStyle ?? {}) },
+      }
+    })
+}
+
+function tryParseFeatures(json: string): TonyFeature[] {
+  try {
+    const parsed = JSON.parse(json) as Record<string, unknown>
+    const raw = parsed.features
+    if (!Array.isArray(raw)) return []
+    return normalizeFeaturesArray(raw)
+  } catch {
+    return []
+  }
+}
+
 export function parseTonyResponse(rawText: string): ParsedTonyResponse {
   const result: ParsedTonyResponse = {
     analysis: "",
@@ -54,42 +111,32 @@ export function parseTonyResponse(rawText: string): ParsedTonyResponse {
   const thisWeekMatch = rawText.match(/THIS_WEEK:\s*\n([\s\S]*?)(?=\nDRAW_FEATURES:|$)/)
   if (thisWeekMatch) result.thisWeek = thisWeekMatch[1].trim()
 
-  // Extract JSON features block — handle both ```json and plain ``` fences
-  const jsonMatch = rawText.match(/```(?:json)?\s*\n([\s\S]*?)\n```/)
+  // Try multiple patterns to extract DRAW_FEATURES JSON
+  // Pattern 1: standard ```json ... ``` block
+  const jsonMatch = rawText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
   if (jsonMatch) {
-    try {
-      const parsed = JSON.parse(jsonMatch[1].trim())
-      const rawFeatures: TonyFeature[] = parsed.features || []
+    const features = tryParseFeatures(jsonMatch[1].trim())
+    if (features.length > 0) {
+      result.features = features
+      return result
+    }
 
-      // Normalize styles: if Tony returns a style, merge with our defaults
-      result.features = rawFeatures.map((f) => ({
-        ...f,
-        style: {
-          ...(FEATURE_STYLES[f.type] ?? { color: "#ffffff", fillOpacity: 0.3, weight: 2 }),
-          ...f.style,
-        },
-      }))
-    } catch (e) {
-      console.error("Failed to parse Tony features JSON:", e)
+    // Pattern 2: brace extraction fallback
+    const block = jsonMatch[1]
+    const openBrace = block.indexOf("{")
+    const closeBrace = block.lastIndexOf("}")
+    if (openBrace !== -1 && closeBrace > openBrace) {
+      const trimmed = block.slice(openBrace, closeBrace + 1)
+      result.features = tryParseFeatures(trimmed)
+    }
+  }
 
-      // Attempt a more lenient extraction — find the first valid JSON object in the block
-      try {
-        const openBrace = jsonMatch[1].indexOf("{")
-        const closeBrace = jsonMatch[1].lastIndexOf("}")
-        if (openBrace !== -1 && closeBrace !== -1) {
-          const trimmed = jsonMatch[1].slice(openBrace, closeBrace + 1)
-          const parsed = JSON.parse(trimmed)
-          result.features = (parsed.features || []).map((f: TonyFeature) => ({
-            ...f,
-            style: {
-              ...(FEATURE_STYLES[f.type] ?? { color: "#ffffff", fillOpacity: 0.3, weight: 2 }),
-              ...f.style,
-            },
-          }))
-        }
-      } catch {
-        // Parsing fully failed — features stay empty
-      }
+  // Pattern 3: raw JSON object anywhere in text (no code fence)
+  if (result.features.length === 0) {
+    const rawMatch = rawText.match(/"features"\s*:\s*\[[\s\S]*?\]/)
+    if (rawMatch) {
+      const wrapped = `{${rawMatch[0]}}`
+      result.features = tryParseFeatures(wrapped)
     }
   }
 

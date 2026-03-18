@@ -1,102 +1,145 @@
 /* ── Google Fonts — BuckGrid Pro ───────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;600;700&family=DM+Mono&display=swap');
-
-/* ── Mapbox ─────────────────────────────────────────────────── */
-@import 'mapbox-gl/dist/mapbox-gl.css';
-@import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── BuckGrid Pro — Glass UI ─────────────────────────────── */
-.glass {
-  background: rgba(15, 15, 15, 0.98);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #fff;
-  z-index: 2000;
+/* ── BuckGrid Pro Design Tokens ─────────────────────────────── */
+:root {
+  --bg-base:       #0A0D09;
+  --bg-surface:    #111510;
+  --bg-elevated:   #181E15;
+  --bg-card:       rgba(16,21,14,0.94);
+  --border:        rgba(255,255,255,0.07);
+  --border-gold:   rgba(217,164,65,0.2);
+  --gold:          #D9A441;
+  --gold-bright:   #E8B84B;
+  --gold-dim:      rgba(217,164,65,0.15);
+  --green-accent:  #4B7A2C;
+  --text-primary:  #F0E8D4;
+  --text-muted:    rgba(240,232,212,0.55);
+  --text-dim:      rgba(240,232,212,0.3);
+  --blur:          blur(18px);
+  --ease:          cubic-bezier(0.16,1,0.3,1);
+  --spring:        cubic-bezier(0.175,0.885,0.32,1.05);
+  --radius-panel:  20px;
 }
 
-/* Hide Leaflet attribution (optional) */
+/* ── Base ─────────────────────────────────────────────────── */
+@layer base {
+  html { @apply scroll-smooth; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+
+  * { box-sizing: border-box; }
+
+  input, button, textarea {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(217,164,65,0.25);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(217,164,65,0.45);
+  }
+
+  ::selection {
+    background: rgba(217,164,65,0.35);
+    color: #f0e8d4;
+  }
+}
+
+/* ── Component Layer ────────────────────────────────────────── */
+@layer components {
+  /* Glass panel — the primary BuckGrid UI surface */
+  .glass {
+    background: var(--bg-card);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--border-gold);
+    color: var(--text-primary);
+    border-radius: var(--radius-panel);
+  }
+
+  .glass-subtle {
+    background: rgba(16,21,14,0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+  }
+
+  /* Gold accent button */
+  .btn-gold {
+    background: linear-gradient(135deg, #c4922a 0%, var(--gold-bright) 100%);
+    color: #17150f;
+    font-weight: 800;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s var(--ease), box-shadow 0.15s var(--ease);
+    box-shadow: 0 8px 20px rgba(217,164,65,0.22);
+  }
+  .btn-gold:hover { opacity: 0.9; }
+  .btn-gold:active { transform: scale(0.97); }
+  .btn-gold:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+/* ── Utilities ──────────────────────────────────────────────── */
+@layer utilities {
+  .text-gold   { color: var(--gold); }
+  .text-muted  { color: var(--text-muted); }
+  .text-dim    { color: var(--text-dim); }
+  .bg-base     { background: var(--bg-base); }
+  .bg-elevated { background: var(--bg-elevated); }
+  .font-serif  { font-family: 'Playfair Display', serif; }
+  .font-mono   { font-family: 'DM Mono', monospace; }
+}
+
+/* ── Leaflet overrides ──────────────────────────────────────── */
 .leaflet-control-attribution {
   display: none !important;
 }
 
-/* ── Base Layer ─────────────────────────────────────────────────── */
-@layer base {
-  :root {
-    --font-inter: 'Inter', sans-serif;
-    --font-montserrat: 'Montserrat', sans-serif;
-  }
-
-  html {
-    @apply scroll-smooth;
-  }
-
-  body {
-    @apply bg-neural-dark text-neural-text antialiased;
-    background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(45, 27, 105, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(0, 245, 255, 0.04) 0%, transparent 50%);
-  }
-
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-neural-dark;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-neural-indigo-mid rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neural-cyan;
-  }
-
-  /* Text selection */
-  ::selection {
-    @apply bg-neural-cyan text-neural-black;
-  }
+.leaflet-control-zoom {
+  border: 1px solid var(--border-gold) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
 }
 
-/* ── Component Layer ────────────────────────────────────────────── */
-@layer components {
-  /* Glassmorphism base */
-  .glass {
-    @apply bg-neural-indigo/40 backdrop-blur-md border border-neural-indigo-mid/30 rounded-2xl;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
-  }
-
-  /* Cyan text glow */
-  .text-glow-cyan {
-    text-shadow: 0 0 20px rgba(0, 245, 255, 0.6), 0 0 40px rgba(0, 245, 255, 0.3);
-  }
-
-  /* Section padding */
-  .section-pad {
-    @apply py-24 px-6 md:px-12 lg:px-24;
-  }
-
-  /* Gradient heading */
-  .heading-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #ffffff 0%, #00f5ff 50%, #8b5cf6 100%);
-  }
-
-  /* Neural border accent */
-  .border-neural {
-    @apply border border-neural-indigo-mid/40 hover:border-neural-cyan/40 transition-colors duration-300;
-  }
+.leaflet-control-zoom a {
+  background: var(--bg-card) !important;
+  color: var(--gold) !important;
+  border-color: var(--border-gold) !important;
+  font-size: 18px !important;
+  line-height: 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+  transition: background 0.15s;
 }
 
-/* ── Utilities ──────────────────────────────────────────────────── */
-@layer utilities {
-  .animate-delay-100 { animation-delay: 100ms; }
-  .animate-delay-200 { animation-delay: 200ms; }
-  .animate-delay-300 { animation-delay: 300ms; }
-  .animate-delay-400 { animation-delay: 400ms; }
-  .animate-delay-500 { animation-delay: 500ms; }
+.leaflet-control-zoom a:hover {
+  background: var(--bg-elevated) !important;
+}
+
+/* ── Pulse animation for pinch points ──────────────────────── */
+@keyframes bgPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
 }

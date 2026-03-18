@@ -1,14 +1,23 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import ToolGrid from './ToolGrid'
 import TonyChat, { type TonyChatHandle } from './TonyChat'
 import { TOOLS, type Tool } from '@/lib/buckgrid/tools'
 import type { MapContainerHandle } from './MapContainer'
+import type { TonyFeature, ParsedTonyResponse } from '@/lib/parse-tony-response'
+import MapErrorBoundary from './MapErrorBoundary'
 
 // Dynamic import prevents SSR errors with Leaflet
-const MapContainer = dynamic(() => import('./MapContainer'), { ssr: false })
+const MapContainer = dynamic(() => import('./MapContainer'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d09' }}>
+      <div style={{ color: 'rgba(217,164,65,0.6)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading map...</div>
+    </div>
+  ),
+})
 
 export default function BuckGridProPage() {
   const mapRef = useRef<MapContainerHandle>(null)
@@ -20,8 +29,8 @@ export default function BuckGridProPage() {
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [searchLabel, setSearchLabel] = useState('')
+  const [tonyFeatures, setTonyFeatures] = useState<TonyFeature[]>([])
   const [viewportWidth, setViewportWidth] = useState(1600)
-  const isTablet = viewportWidth < 1400
   const isMobile = viewportWidth < 960
 
   useEffect(() => {
@@ -33,8 +42,12 @@ export default function BuckGridProPage() {
 
   const onLockBorder = useCallback(async () => {
     const result = await mapRef.current?.lockBoundary()
-    if (!result || result.count === 0) {
-      chatRef.current?.addTonyMessage("Draw your property boundary first, then lock it.")
+    if (!result) {
+      chatRef.current?.addTonyMessage("Map is still loading — give it a second and try again.")
+      return
+    }
+    if (result.acres === 0) {
+      chatRef.current?.addTonyMessage("Zoom in to your property first, draw a BORDER rectangle over it, then click Lock & Scan.")
       return
     }
     setPropertyAcres(result.acres)
@@ -67,13 +80,18 @@ export default function BuckGridProPage() {
       const data = await res.json()
       if (res.ok && typeof data?.lat === 'number' && typeof data?.lon === 'number') {
         setSearchLabel(data.label || q)
-        setActiveTool(TOOLS[0])
-        if (data?.boundingbox) {
-          mapRef.current?.fitBounds(data.boundingbox)
+        setActiveTool(TOOLS[1])  // switch to BORDER tool so user can draw immediately
+        if (data.boundingbox) {
+          mapRef.current?.fitBounds({
+            south: data.boundingbox.south,
+            west: data.boundingbox.west,
+            north: data.boundingbox.north,
+            east: data.boundingbox.east,
+          })
         } else {
-          mapRef.current?.flyTo([data.lat, data.lon], 15)
+          mapRef.current?.flyTo([data.lat, data.lon], 14)
         }
-        chatRef.current?.addTonyMessage(`Centered on ${data.label || q}. Draw the border you want Tony to analyze.`)
+        chatRef.current?.addTonyMessage(`Found ${data.label?.split(',').slice(0, 2).join(',') || q}. BORDER tool is active — drag a rectangle over your property, then click Lock & Scan.`)
       } else {
         setSearchError(data?.error || 'Address not found')
         setTimeout(() => setSearchError(''), 3000)
@@ -98,85 +116,56 @@ export default function BuckGridProPage() {
     >
 
       {/* Full-screen map */}
-      <MapContainer ref={mapRef} activeTool={activeTool} brushSize={brushSize} />
+      <MapErrorBoundary>
+        <Suspense fallback={null}>
+          <MapContainer ref={mapRef} activeTool={activeTool} brushSize={brushSize} tonyFeatures={tonyFeatures} />
+        </Suspense>
+      </MapErrorBoundary>
 
       <div
         style={{
           position: 'absolute',
           inset: 0,
           background:
-            'linear-gradient(90deg, rgba(8,11,8,0.72) 0%, rgba(8,11,8,0.18) 34%, rgba(8,11,8,0.06) 56%, rgba(8,11,8,0.55) 100%)',
+            'linear-gradient(90deg, rgba(8,11,8,0.55) 0%, rgba(8,11,8,0.08) 30%, rgba(8,11,8,0.04) 60%, rgba(8,11,8,0.45) 100%)',
           pointerEvents: 'none',
         }}
       />
 
+      {/* ── BRAND PILL (top-left) ── */}
       <div
         style={{
           position: 'absolute',
-          top: 18,
+          top: 16,
           left: 18,
           zIndex: 2000,
-          width: isMobile ? 'calc(100vw - 36px)' : 'min(420px, calc(100vw - 420px))',
-          pointerEvents: 'auto',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '7px 14px',
+          borderRadius: 999,
+          background: 'rgba(10,12,10,0.82)',
+          border: '1px solid rgba(217,164,65,0.22)',
+          backdropFilter: 'blur(16px)',
+          pointerEvents: 'none',
         }}
       >
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '7px 12px',
-            borderRadius: 999,
-            background: 'rgba(10,12,10,0.72)',
-            border: '1px solid rgba(217,164,65,0.18)',
-            color: '#d9a441',
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            marginBottom: 14,
-            backdropFilter: 'blur(14px)',
-          }}
-        >
-          <span>Elite Habitat Intelligence</span>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 10px rgba(132,204,22,0.7)' }} />
-        </div>
-        <div style={{ color: '#f8f0de', fontSize: 'clamp(28px, 3vw, 40px)', lineHeight: 0.96, fontWeight: 700, letterSpacing: '-0.05em', marginBottom: 10, fontFamily: "'Playfair Display', serif" }}>
+        <span style={{ color: '#d9a441', fontSize: 11, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Playfair Display', serif" }}>
           BuckGrid Pro
-        </div>
-        <div style={{ color: 'rgba(237,227,197,0.76)', fontSize: 14, lineHeight: 1.6, maxWidth: 420, marginBottom: 12 }}>
-          Sketch the property, lock the footprint, and get a ranked habitat plan without burying the map under UI.
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {['Search the farm', 'Paint the plan', 'Ask Tony the next move'].map((line) => (
-            <div
-              key={line}
-              style={{
-                padding: '7px 11px',
-                borderRadius: 999,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#d8decb',
-                fontSize: 11,
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              {line}
-            </div>
-          ))}
-        </div>
+        </span>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#84cc16', boxShadow: '0 0 8px rgba(132,204,22,0.8)', flexShrink: 0 }} />
       </div>
 
       {/* ── ADDRESS SEARCH BAR ── */}
       <div style={{
         position: 'absolute',
-        top: isMobile ? 156 : 22,
+        top: isMobile ? 70 : 16,
         left: isMobile ? 18 : '50%',
         transform: isMobile ? 'none' : 'translateX(-50%)',
         zIndex: 2000,
         display: 'flex',
         gap: 0,
-        width: isMobile ? 'calc(100vw - 36px)' : 'min(460px, calc(100vw - 40px))',
+        width: isMobile ? 'calc(100vw - 36px)' : 'min(480px, calc(100vw - 280px))',
       }}>
         <input
           value={searchQuery}
@@ -237,7 +226,7 @@ export default function BuckGridProPage() {
         style={{
           position: 'absolute',
           left: 18,
-          top: isMobile ? 214 : 108,
+          top: isMobile ? 130 : 72,
           padding: 14,
           borderRadius: 20,
           width: isMobile ? 'calc(100vw - 36px)' : 214,
@@ -245,6 +234,8 @@ export default function BuckGridProPage() {
           background: 'linear-gradient(180deg, rgba(14,18,14,0.94) 0%, rgba(10,12,10,0.98) 100%)',
           border: '1px solid rgba(217,164,65,0.16)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.32)',
+          maxHeight: isMobile ? 'auto' : 'calc(100vh - 80px)',
+          overflowY: 'auto',
         }}
       >
         <div style={{ fontSize: 10, fontWeight: 900, color: '#d9a441', letterSpacing: '0.2em', marginBottom: 6, textTransform: 'uppercase' }}>
@@ -254,7 +245,7 @@ export default function BuckGridProPage() {
           Tools
         </div>
         <div style={{ color: 'rgba(237,227,197,0.68)', fontSize: 12, lineHeight: 1.55, marginBottom: 6 }}>
-          Draw only what matters, then lock the boundary when you want Tony to react to the plan.
+          Start with an address search, draw your BORDER, then Lock & Scan for Tony's habitat audit.
         </div>
         <ToolGrid
           tools={TOOLS}
@@ -266,6 +257,7 @@ export default function BuckGridProPage() {
           onWipeAll={() => {
             mapRef.current?.wipeAll()
             setPropertyAcres(0)
+            setTonyFeatures([])
           }}
         />
       </div>
@@ -283,6 +275,7 @@ export default function BuckGridProPage() {
           }),
           locationLabel: searchLabel,
         })}
+        onTonyResponse={useCallback((parsed: ParsedTonyResponse) => setTonyFeatures(parsed.features), [])}
       />
 
       {/* ── ACRES DISPLAY (bottom-left) ── */}
@@ -308,7 +301,7 @@ export default function BuckGridProPage() {
           <span style={{ fontSize: 10, color: 'rgba(237,227,197,0.52)', marginLeft: 6, letterSpacing: '0.16em' }}>ACRES</span>
         </div>
         <div style={{ color: 'rgba(237,227,197,0.64)', fontSize: 12, marginTop: 4 }}>
-          {propertyAcres > 0 ? 'Ready for a habitat audit.' : 'Draw and lock a boundary to start.'}
+          {propertyAcres > 0 ? 'Property locked. Ask Tony anything.' : 'Draw BORDER → Lock & Scan to start.'}
         </div>
       </div>
     </div>
